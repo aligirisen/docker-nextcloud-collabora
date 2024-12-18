@@ -1,0 +1,54 @@
+version: '3.3'
+services:
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    ports:
+      - "8081:80"
+      - "8444:443"
+    environment:
+      MYSQL_PASSWORD: examplepassword
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_HOST: db
+    volumes:
+      - nextcloud_data:/var/www/html
+    networks:
+      - nextcloud_network
+    depends_on:
+      - collabora
+
+  collabora:
+    image: agirisen0/collabora-permissions
+    container_name: collabora
+    environment:
+      - domain=161.9.194.143
+      - username=admin
+      - password=adminpassword
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=false
+    ports:
+      - "9981:9980" # You can access Collabora at http://localhost:9981
+    networks:
+      - nextcloud_network
+
+  db:
+    image: mysql:5.7
+    container_name: nextcloud_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: examplepassword
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - nextcloud_network
+
+volumes:
+  nextcloud_data:
+  db_data:
+
+networks:
+  nextcloud_network:
+    driver: bridge
+
